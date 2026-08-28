@@ -104,6 +104,7 @@ def build() -> None:
     (SITE / "dispatches").mkdir(parents=True)
     (SITE / "assets").mkdir()
     (SITE / "lawsuits").mkdir()
+    (SITE / "council-audio").mkdir()
 
     cards = []
     for row in reversed(rows):
@@ -124,7 +125,7 @@ def build() -> None:
   <p class="eyebrow">Sample source</p>
   <h1>Follow the contracts shaping a fictional city</h1>
   <p>These {len(rows)} dispatches contain recurring agencies, vendors, people, disputed claims, corrections, and contract identifiers. Use the RSS feed or CSV snapshot to import them into Frisket.</p>
-  <nav class="downloads"><a href="feed.xml">RSS feed</a><a href="dispatches.csv">Dispatches CSV</a><a href="contracts.csv">Contracts CSV</a><a href="lawsuits/">Lawsuit PDF lab</a></nav>
+  <nav class="downloads"><a href="feed.xml">RSS feed</a><a href="dispatches.csv">Dispatches CSV</a><a href="contracts.csv">Contracts CSV</a><a href="lawsuits/">Lawsuit PDF lab</a><a href="council-audio/">Council audio lab</a></nav>
 </section>
 <ol class="story-list">{"".join(cards)}</ol>"""
     (SITE / "index.html").write_text(page("Home", index_body), encoding="utf-8")
@@ -164,12 +165,43 @@ def build() -> None:
     (SITE / "lawsuits" / "index.html").write_text(
         page("Lawsuit document lab", lawsuit_body), encoding="utf-8"
     )
+
+    audio_source = CONTENT / "council-audio"
+    audio_files = sorted(audio_source.glob("*.mp3"))
+    audio_players = "".join(
+        f"""<li><strong>{html.escape(path.stem.replace("-", " ").title())}</strong>
+<audio controls preload="metadata" src="{html.escape(path.name)}"></audio>
+<a href="{html.escape(path.name)}">Download MP3</a></li>"""
+        for path in audio_files
+    )
+    for path in audio_files:
+        shutil.copy2(path, SITE / "council-audio" / path.name)
+    for name in ("manifest.csv", "README.txt"):
+        shutil.copy2(audio_source / name, SITE / "council-audio" / name)
+    audio_archive = SITE / "council-audio" / "ann-arbor-council-audio-lab.zip"
+    with zipfile.ZipFile(
+        audio_archive, "w", compression=zipfile.ZIP_DEFLATED
+    ) as archive:
+        archive.write(audio_source / "manifest.csv", "manifest.csv")
+        archive.write(audio_source / "README.txt", "README.txt")
+        for path in audio_files:
+            archive.write(path, path.name)
+    audio_body = f"""<section class="intro">
+  <p class="eyebrow">Downloadable sample pack</p>
+  <h1>City council listening desk</h1>
+  <p>Two five-minute, speech-dense excerpts from Ann Arbor public meetings, prepared as small local MP3 files for transcription and source review.</p>
+  <nav class="downloads"><a href="ann-arbor-council-audio-lab.zip">Download ZIP</a><a href="manifest.csv">Provenance manifest</a><a href="README.txt">Walkthrough guide</a></nav>
+</section><ul class="audio-list">{audio_players}</ul>"""
+    (SITE / "council-audio" / "index.html").write_text(
+        page("City council listening desk", audio_body), encoding="utf-8"
+    )
     (DIST / ".nojekyll").write_text("", encoding="utf-8")
 
     # A small machine-checkable build summary keeps accidental empty fixtures obvious.
     print(
         f"Built {len(rows)} dispatch pages, {len(contracts)} contracts, "
-        f"{len(lawsuit_files)} lawsuit PDFs, and 2 feed snapshots"
+        f"{len(lawsuit_files)} lawsuit PDFs, {len(audio_files)} audio excerpts, "
+        "and 2 feed snapshots"
     )
 
 
@@ -196,6 +228,9 @@ h1 { max-width:720px; margin:.25rem 0 1rem; font-size:clamp(2.2rem,6vw,4.5rem); 
 .story-list span:last-child { grid-column:2; color:var(--muted); font-size:.94rem; }
 .file-list { padding:0; border-top:1px solid var(--line); list-style:none; }
 .file-list li { padding:.8rem 0; border-bottom:1px solid var(--line); font:14px/1.4 ui-monospace,monospace; overflow-wrap:anywhere; }
+.audio-list { display:grid; gap:1rem; padding:0; list-style:none; }
+.audio-list li { display:grid; gap:.55rem; padding:1rem; border:1px solid var(--line); border-radius:4px; }
+.audio-list audio { width:100%; }
 .record-meta { display:grid; grid-template-columns:max-content 1fr; gap:.25rem 1rem; margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); font:12px/1.5 system-ui,sans-serif; color:var(--muted); }
 .record-meta dt { font-weight:700; }
 .record-meta dd { margin:0; }
