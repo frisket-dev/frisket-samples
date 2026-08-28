@@ -24,6 +24,7 @@ preview; Frisket's URL and RSS importers intentionally reject loopback URLs.
 - `/riverton/feed-v2.xml` — current versioned snapshot
 - `/riverton/dispatches.csv` and `/riverton/contracts.csv` — offline imports
 - `/riverton/lawsuits/` — searchable PDF pack, docket CSV, and short guide
+- `/riverton/council-audio/` — local MP3 excerpts, provenance, and guide
 
 GitHub Pages deploys the generated `dist` directory after changes merge to
 `main`.
