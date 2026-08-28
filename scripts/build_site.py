@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import html
 import shutil
+import zipfile
 from datetime import datetime
 from email.utils import format_datetime
 from pathlib import Path
@@ -102,6 +103,7 @@ def build() -> None:
         shutil.rmtree(DIST)
     (SITE / "dispatches").mkdir(parents=True)
     (SITE / "assets").mkdir()
+    (SITE / "lawsuits").mkdir()
 
     cards = []
     for row in reversed(rows):
@@ -122,7 +124,7 @@ def build() -> None:
   <p class="eyebrow">Sample source</p>
   <h1>Follow the contracts shaping a fictional city</h1>
   <p>These {len(rows)} dispatches contain recurring agencies, vendors, people, disputed claims, corrections, and contract identifiers. Use the RSS feed or CSV snapshot to import them into Frisket.</p>
-  <nav class="downloads"><a href="feed.xml">RSS feed</a><a href="dispatches.csv">Dispatches CSV</a><a href="contracts.csv">Contracts CSV</a></nav>
+  <nav class="downloads"><a href="feed.xml">RSS feed</a><a href="dispatches.csv">Dispatches CSV</a><a href="contracts.csv">Contracts CSV</a><a href="lawsuits/">Lawsuit PDF lab</a></nav>
 </section>
 <ol class="story-list">{"".join(cards)}</ol>"""
     (SITE / "index.html").write_text(page("Home", index_body), encoding="utf-8")
@@ -134,11 +136,40 @@ def build() -> None:
     (SITE / "feed-v2.xml").write_text(current_feed, encoding="utf-8")
     (SITE / "feed.xml").write_text(current_feed, encoding="utf-8")
     (SITE / "assets" / "site.css").write_text(STYLES, encoding="utf-8")
+
+    lawsuit_source = CONTENT / "lawsuit-pdfs"
+    lawsuit_files = sorted(lawsuit_source.glob("*.pdf"))
+    lawsuit_links = "".join(
+        f'<li><a href="{html.escape(path.name)}">{html.escape(path.name)}</a></li>'
+        for path in lawsuit_files
+    )
+    for path in lawsuit_files:
+        shutil.copy2(path, SITE / "lawsuits" / path.name)
+    shutil.copy2(CONTENT / "court-docket.csv", SITE / "lawsuits" / "court-docket.csv")
+    shutil.copy2(lawsuit_source / "README.txt", SITE / "lawsuits" / "README.txt")
+    archive_path = SITE / "lawsuits" / "riverton-lawsuit-document-lab.zip"
+    with zipfile.ZipFile(
+        archive_path, "w", compression=zipfile.ZIP_DEFLATED
+    ) as archive:
+        archive.write(CONTENT / "court-docket.csv", "court-docket.csv")
+        archive.write(lawsuit_source / "README.txt", "README.txt")
+        for path in lawsuit_files:
+            archive.write(path, path.name)
+    lawsuit_body = f"""<section class="intro">
+  <p class="eyebrow">Downloadable sample pack</p>
+  <h1>Lawsuit document lab</h1>
+  <p>Six fictional, searchable court filings with recurring vendors, city contracts, case numbers, deadlines, damages, and deliberately qualified claims.</p>
+  <nav class="downloads"><a href="riverton-lawsuit-document-lab.zip">Download ZIP</a><a href="court-docket.csv">Court docket CSV</a><a href="README.txt">Walkthrough guide</a></nav>
+</section><ul class="file-list">{lawsuit_links}</ul>"""
+    (SITE / "lawsuits" / "index.html").write_text(
+        page("Lawsuit document lab", lawsuit_body), encoding="utf-8"
+    )
     (DIST / ".nojekyll").write_text("", encoding="utf-8")
 
     # A small machine-checkable build summary keeps accidental empty fixtures obvious.
     print(
-        f"Built {len(rows)} dispatch pages, {len(contracts)} contracts, and 2 feed snapshots"
+        f"Built {len(rows)} dispatch pages, {len(contracts)} contracts, "
+        f"{len(lawsuit_files)} lawsuit PDFs, and 2 feed snapshots"
     )
 
 
@@ -163,6 +194,8 @@ h1 { max-width:720px; margin:.25rem 0 1rem; font-size:clamp(2.2rem,6vw,4.5rem); 
 .story-list a { display:grid; grid-template-columns:8rem 1fr; gap:.3rem 1rem; padding:1.3rem 0; text-decoration:none; }
 .story-list strong { font-size:1.2rem; line-height:1.25; }
 .story-list span:last-child { grid-column:2; color:var(--muted); font-size:.94rem; }
+.file-list { padding:0; border-top:1px solid var(--line); list-style:none; }
+.file-list li { padding:.8rem 0; border-bottom:1px solid var(--line); font:14px/1.4 ui-monospace,monospace; overflow-wrap:anywhere; }
 .record-meta { display:grid; grid-template-columns:max-content 1fr; gap:.25rem 1rem; margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); font:12px/1.5 system-ui,sans-serif; color:var(--muted); }
 .record-meta dt { font-weight:700; }
 .record-meta dd { margin:0; }
