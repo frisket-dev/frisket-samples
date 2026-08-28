@@ -1,0 +1,13 @@
+contract_id,vendor,agency,award_date,ceiling_usd,status,description
+CTR-2024-205,Valley Response Cooperative,Health Department,2024-06-18,6200000,extended,Emergency ambulance response and overnight crews
+CTR-2025-077,Cedar Bridge Security,School District,2025-05-09,3740000,active,School security staffing
+CTR-2025-118,Northstar Civil LLC,Transit Authority,2025-08-21,1580000,amended,Bus depot roof and drainage replacement
+CTR-2025-162,Eastbank Infrastructure,Public Works,2025-11-03,8125000,change_order_pending,Monroe Avenue bridge rehabilitation
+CTR-2026-014,Northstar Civil LLC,Transit Authority,2026-01-04,2400000,active,Emergency bus depot stabilization
+CTR-2026-021,Harbor Analytics,Water Authority,2026-01-17,950000,under_review,Lead-test address matching and workflow design
+CTR-2026-033,Meridian Food Services,Human Services,2026-01-22,1850000,active,Emergency shelter meal service
+CTR-2026-041,Bright Harbor Systems,Public Library,2026-02-08,184000,active,Digitization request software pilot
+CTR-2026-052,Greenline Civic Data,Parks Department,2026-03-02,398000,active,Citywide tree inventory and mapping
+CTR-2026-060,Kerbside Labs,Transportation Department,2026-03-05,610000,canceled,Smart parking sensor purchase
+CTR-2026-071,Orchard Language Access,City Clerk,2026-03-20,275000,active,Interpretation services for public meetings
+CTR-2026-084,Marrow Street Design,Housing Department,2026-03-25,440000,active,Foundry District public-realm design
